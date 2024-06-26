@@ -23,5 +23,17 @@ services:
       - 3001:3001
     volumes:
       - .:/usr/src/app
+  payments:
+    build:
+      context: .
+      dockerfile: ./apps/payments/Dockerfile
+      target: development
+    command: pnpm run start:dev payments
+    env_file:
+      - ./apps/payments/.env
+    ports:
+      - 3003:3003
+    volumes:
+      - .:/usr/src/app
   mongo:
     image: f73cf5ec7b62ea11f56b158ad8aca3c46d753fbf70f56565d59d536221dcc7cb
