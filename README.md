@@ -1,32 +1,16 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Microservices System using NestJS
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This repository contains the microservices for handling reservations, payments, authentication, and notifications using the NestJS framework. Refer to the architecture diagram for an overview of service interactions.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Prerequisites
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js
+- MongoDB
+- `pnpm` package manager
 
 ## Installation
+
+To install the necessary dependencies, run the following command:
 
 ```bash
 $ pnpm install
@@ -34,8 +18,10 @@ $ pnpm install
 
 ## Running the app
 
+You can start the application in development, watch, or production mode.
+
 ```bash
-# development
+# development mode
 $ pnpm run start
 
 # watch mode
@@ -45,7 +31,46 @@ $ pnpm run start:dev
 $ pnpm run start:prod
 ```
 
+## Microservices Structure
+
+This system is composed of several distinct microservices, each responsible for a specific part of the application's functionality. Here is a breakdown of each service:
+
+- **Auth Service** (TCP 3002):
+
+  - Handles user authentication.
+  - Issues JSON Web Tokens (JWTs) for securing endpoints.
+  - Connects to MongoDB to manage user data.
+  - Deployment configurations are managed through `auth/deployment.yaml`.
+
+- **Reservations Service** (HTTP 3000):
+
+  - Manages reservation data.
+  - Interfaces directly with MongoDB to store and retrieve reservations.
+  - Accessible via HTTP to support web-based interactions.
+  - Kubernetes services include load balancing and optional ingress for external access.
+
+- **Payments Service** (TCP 3003):
+
+  - Integrates with Stripe to process payments.
+  - Manages transaction records in MongoDB.
+  - Utilizes a TCP connection for internal communication.
+  - Ensured high availability and security through Kubernetes deployment settings.
+
+- **Notifications Service** (TCP 3004):
+  - Handles sending email notifications via Gmail.
+  - Works asynchronously to send alerts about reservations, payments, and user activities.
+  - Uses a TCP connection for inter-service messaging.
+  - Deployment ensures reliability and scalability.
+
+Each service is designed to operate independently, allowing for scalability and resilience. Configurations for Kubernetes deployments, including services and optional ingress settings, are managed through respective YAML files in the `charts` directory.
+
+## Environment Configuration
+
+Each service requires its own environment configuration for optimal operation. Ensure that environment variables are set up for each service according to their specific needs.
+
 ## Test
+
+Testing is an integral part of maintaining code quality and ensuring functionality. Ensure you have the necessary testing environment setup, including any required service stubs or mocks for integration tests.
 
 ```bash
 # unit tests
@@ -58,16 +83,48 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
-## Support
+## Deployment
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Prerequisites
 
-## Stay in touch
+- Kubernetes cluster (GKE recommended)
+- Helm 3 installed
+- `kubectl` configured to communicate with your Kubernetes cluster
+- Access to a Google Cloud Platform (GCP) account
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Configuring Helm and Kubernetes
 
-## License
+1. **Set up the Kubernetes context:**
 
-Nest is [MIT licensed](LICENSE).
+   Ensure `kubectl` is configured to interact with your Kubernetes cluster. You can set the current context to your cluster using:
+
+   ```bash
+   $ gcloud container clusters get-credentials [CLUSTER_NAME] --zone [CLUSTER_ZONE] --project [PROJECT_ID]
+   ```
+
+### Deploying Microservices
+
+Deploy each microservice using Helm. The templates for deployment, services, and ingress (if applicable) are organized under each microservice directory.
+
+```bash
+# Deploy the Auth service
+$ helm install auth ./auth
+
+# Deploy the Notifications service
+$ helm install notifications ./notifications
+
+# Deploy the Payments service
+$ helm install payments ./payments
+
+# Deploy the Reservations service
+$ helm install reservations ./reservations
+```
+
+### Monitoring Deployment
+
+Monitor the deployment status and troubleshoot any issues with:
+
+```bash
+$ kubectl get pods
+$ kubectl describe pod [POD_NAME]
+```
